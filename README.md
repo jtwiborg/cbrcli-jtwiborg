@@ -20,11 +20,11 @@ Cygwin is the recommended method of running cbrcli on windows as it will have al
 
 * Install Cygwin from https://cygwin.com/install.html
 * When installing Cygwin, ensure that the python and python pip packages are selected for installation
-* This version have now cbapi included under /Submodules/cbapi-python and does not require it to be installed with pip install cbapi.
+* Install dependencies with `pip install -r requirements.txt`.
 * Download and extract cbrcli from the github page (https://github.com/jtwiborg/cbrcli-jtwiborg.git)  (Original found here: https://github.com/ctxis/cbrcli)
 * Navigate to the downloaded directory in cygwin, likely somewhere in /cygdrive/c/Users/yourusername/
 * Follow the instructions here https://cbapi.readthedocs.io/en/latest/#api-credentials to set up your credentials
-* Start cbrcli with `python cbrcli.py`
+* Start cbrcli with `python3 cbrcli.py`
 
 Method 2: Windows cmd
 This method will work and is slightly simpler than the cygwin method, however the experience will not be as smooth and you won't get advantages like coloured output.
@@ -40,8 +40,9 @@ Installation on Linux should be much simpler than Windows.
 
 * Install python3 for your Linux distribution or by venv, conda or other.
 * Download and extract https://github.com/jtwiborg/cbrcli-jtwiborg.git from github  (Original found here: https://github.com/ctxis/cbrcli)
+* Install dependencies with `pip install -r requirements.txt`
 * Follow the instructions here https://cbapi.readthedocs.io/en/latest/#api-credentials to set up your credentials
-* cd into the cbrcli directory and run with `python cbrcli.py`
+* cd into the cbrcli directory and run with `python3 cbrcli.py`
 
 ## In-program Help
 
