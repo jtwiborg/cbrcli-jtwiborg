@@ -269,6 +269,7 @@ class status_text:
 status = status_text()
 
 state['result'] = None
+state['siblings'] = None
 is_windows = 'windows' in platform.system().lower()
 state['selected_mode'] = modes['process']
 
@@ -369,7 +370,7 @@ commands = {
     'crossprocs-save': "crossprocs-save <number, *> <filename>\tSave cross processes to file",
     'children': "children [number]\tList child processes",
     'children-save': "children-save <filename>\tSave child processes to file",
-    'siblings': "siblings [number] [count] [asc|desc]\tList sibling processes",
+    'siblings': "siblings [number] [count] [asc|desc]\tList sibling processes (numbered)",
     'parents': "parent [number]\tList parent processes",
     'parents-save': "parent-save <filename>\tSave parent processes to file",
     'exit': "exit\tTerminate cbcli",
@@ -795,8 +796,8 @@ def get_extra_data(records, data_type, formatter=no_format, do_color=False):
 def print_walking_results(proc, depth):
     print("[%d] %s%s" % (depth, "  "*depth, '\t'.join([str(getattr(proc, i, '')) for i in state['fieldsets'][state['selected_mode']['name']]['current']])))
 
-def print_sibling_results(proc, depth, highlight_id=None):
-    line = "[%d] %s%s" % (depth, "  "*depth, '\t'.join([str(getattr(proc, i, '')) for i in state['fieldsets'][state['selected_mode']['name']]['current']]))
+def print_sibling_results(proc, index, highlight_id=None):
+    line = "[%d] %s" % (index, '\t'.join([str(getattr(proc, i, '')) for i in state['fieldsets'][state['selected_mode']['name']]['current']]))
     if highlight_id and getattr(proc, 'unique_id', None) == highlight_id:
         line = color(line, 'orange')
     print(line)
@@ -1150,6 +1151,8 @@ class cbcli_cmd:
                 order = remaining[0].lower()
         try:
             records = [state.get('records', [])[record_idx]] if record_idx is not None else state.get('records', [])
+            siblings_list = []
+            idx = 1
             for proc in records:
                 parent = proc.parent
                 if not parent:
@@ -1162,7 +1165,10 @@ class cbcli_cmd:
                 if count is not None:
                     siblings = siblings[:count]
                 for sib in siblings:
-                    print_sibling_results(sib, 0, highlight_id=getattr(proc, 'unique_id', None))
+                    siblings_list.append(sib)
+                    print_sibling_results(sib, idx, highlight_id=getattr(proc, 'unique_id', None))
+                    idx += 1
+            state['siblings'] = siblings_list if siblings_list else None
         except (ValueError, IndexError):
             return "Invalid id"
         except KeyboardInterrupt:
@@ -1380,7 +1386,7 @@ while state['running']:
     completer = QueryCompleter()
     suggester = QuerySuggester()
     try:
-        from_user = session.prompt(u'(%s)> ' % state['selected_mode']['name'] if state['selected_mode'] else '-', 
+        from_user = session.prompt(u'(%s)> ' % state['selected_mode']['name'] if state['selected_mode'] else '-',
                 completer=completer,
                 auto_suggest=suggester,
                 bottom_toolbar=get_toolbar,
@@ -1394,6 +1400,17 @@ while state['running']:
     except KeyboardInterrupt:
         print('%s' % (color("Caught ctrl+c. Use 'exit' or ctrl+d to quit", 'orange')))
         continue
+    if state.get('siblings'):
+        if from_user.isdigit():
+            try:
+                print(state['siblings'][int(from_user) - 1])
+            except (IndexError, ValueError):
+                print(color('Invalid id', 'red'))
+            continue
+        elif from_user == '':
+            state['siblings'] = None
+        else:
+            state['siblings'] = None
     cmd = from_user.split(' ')[0]
     params = from_user.split(' ')[1:]
     try:
