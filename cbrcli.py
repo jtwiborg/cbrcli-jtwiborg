@@ -325,7 +325,7 @@ color_schemes = {
     }
 }
 
-state['color_scheme'] = 'default' if state['options']['colorise_output'] else 'no_colors'
+state['color_scheme'] = 'default' if state['options']['colorise_output']['value'] else 'no_colors'
 
 def color(s, c):
     return s if is_windows or not c else '%s%s%s' % (color_schemes[state['color_scheme']][c], s, color_schemes[state['color_scheme']]['endc'])
@@ -1068,7 +1068,7 @@ class cbcli_cmd:
         os.close(2)
         os.open(os.devnull, os.O_RDWR)
         try:
-            record = state.get('records', [])[int(params[0])]
+            record = state.get('records', [])[int(params[0]) - 1]
             url = "https://%s/#/live/%d" % (record.webui_link.split('/')[2], record.sensor_id)
             webbrowser.open(url)
         except (IndexError, ValueError):
@@ -1213,12 +1213,12 @@ class live_shell:
             self.path_sep = re.compile('[\\/]')
     
     def list_dir(self, path):
-        d = self.get_absolute_path(' '.join(params))
+        d = self.absolute_path(path)
         try:
             for row in self.session.list_directory(d):
                 print(row.get('filename'))
         except LiveResponseError:
-            print ("%s: Path not found" % d)
+            print("%s: Path not found" % d)
 
     def file_listing(self, file_detail):
         last_write = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(file_detail.get('last_write_time', 0)))
