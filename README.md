@@ -8,7 +8,7 @@ I found this tool to be very good, however a bit old and with old dependencies. 
 Things that have been updated:
 * python3 ready
 * New commands.
-  * `siblings` command for listing sibling processes
+* `siblings` command for listing sibling processes (results are numbered and can be inspected)
 
 ## Installing
 
