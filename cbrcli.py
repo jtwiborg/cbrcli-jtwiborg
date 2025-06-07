@@ -1,9 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 from __future__ import (division, print_function, absolute_import, unicode_literals)
 
 VERSION = 'cbrcli version 1.7.8 (Plutonium Eggplant)'
 print(VERSION)
-from six.moves import range
 import os
 import sys
 import platform
@@ -46,7 +45,6 @@ loop = asyncio.SelectorEventLoop(selector)
 asyncio.set_event_loop(loop)
 # End workaround
 
-PYTHON_VERSION = sys.version_info[0]
 
 modes = {
     'binary': {
@@ -229,17 +227,16 @@ default_opts = {
 }
 
 def u(s, encoding='utf8', errors='ignore'):
-    if PYTHON_VERSION != 2:
-        return str(s)
-    if not type(s) == str:
-        s = unicode(s)
-    return unicode(s, encoding=encoding, errors=errors) if not isinstance(s, unicode) else s
+    """Return a unicode string in Python 3."""
+    return str(s)
 
 def encode(s, encoding='utf8', errors='ignore'):
-    return s.encode(encoding, errors=errors) if PYTHON_VERSION == 2 else s
+    """Return *s* unchanged for Python 3 compatibility."""
+    return s
 
 def decode(s, encoding='utf8', errors='ignore'):
-    return s.decode(encoding, errors=errors) if PYTHON_VERSION == 2 else s
+    """Return *s* unchanged for Python 3 compatibility."""
+    return s
 
 try:
     with open(os.sep.join((config_dir, opt_file)), 'r') as f:
