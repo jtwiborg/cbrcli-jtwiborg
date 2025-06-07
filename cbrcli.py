@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import (division, print_function, absolute_import, unicode_literals)
 
-VERSION = 'cbrcli version 1.7.8 (Plutonium Eggplant)'
+VERSION = 'cbrcli version 1.8.0 (Plutonium Eggplant)'
 print(VERSION)
 import os
 import sys
