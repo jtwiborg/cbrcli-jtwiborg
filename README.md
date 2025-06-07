@@ -4,6 +4,11 @@
 
 cbrcli was developed by security analysts to streamline the process of querying Carbon Black data, providing just the information you want in an easily readable format. It is not intended to completely replace the standard web interface, but to work alongside it providing a more customisable view of the data.
 
+I found this tool to be very good, however a bit old and with old dependencies. This is an attempt to fix this. All creds to the original author ctxis.
+Things that have been updated:
+* python3 ready
+* New commands. 
+
 ## Installing
 
 cbrcli runs on Linux or Windows (probably OSX too), and installation instructions can be found below:
@@ -15,8 +20,8 @@ Cygwin is the recommended method of running cbrcli on windows as it will have al
 
 * Install Cygwin from https://cygwin.com/install.html
 * When installing Cygwin, ensure that the python and python pip packages are selected for installation
-* Once installed, start cygwin and run `pip install cbapi`
-* Download and extract cbrcli from the github page (https://github.com/ctxis/cbrcli)
+* This version have now cbapi included under /Submodules/cbapi-python and does not require it to be installed with pip install cbapi.
+* Download and extract cbrcli from the github page (https://github.com/jtwiborg/cbrcli-jtwiborg.git)  (Original found here: https://github.com/ctxis/cbrcli)
 * Navigate to the downloaded directory in cygwin, likely somewhere in /cygdrive/c/Users/yourusername/
 * Follow the instructions here https://cbapi.readthedocs.io/en/latest/#api-credentials to set up your credentials
 * Start cbrcli with `python cbrcli.py`
@@ -24,18 +29,17 @@ Cygwin is the recommended method of running cbrcli on windows as it will have al
 Method 2: Windows cmd
 This method will work and is slightly simpler than the cygwin method, however the experience will not be as smooth and you won't get advantages like coloured output.
 
-* Install Python for windows (https://www.python.org/downloads/windows/)
-* Open a command prompt and run `C:\python27\scripts\pip.exe install cbapi`
-* Download and extract cbrcli from the github page (https://github.com/ctxis/cbrcli)
+* Install Python3 for windows (https://www.python.org/downloads/windows/)
+* Download and extract cbrcli from the github page (https://github.com/jtwiborg/cbrcli-jtwiborg.git)  (Original found here: https://github.com/ctxis/cbrcli)
 * Navigate to the downloaded directory in the command prompt
 * Open the file in `.carbonblack\credentials.response.example` in a text editor (not notepad), fill in the the required information and save as `credentials.response`
-* Start cbrcli with `python cbrcli.py`
+* Start cbrcli with `python3 cbrcli.py`
 
 ### Linux
 Installation on Linux should be much simpler than Windows.
 
-* Run pip install cbapi
-* Download and extract cbrcli from Github
+* Install python3 for your Linux distribution or by venv, conda or other.
+* Download and extract https://github.com/jtwiborg/cbrcli-jtwiborg.git from github  (Original found here: https://github.com/ctxis/cbrcli)
 * Follow the instructions here https://cbapi.readthedocs.io/en/latest/#api-credentials to set up your credentials
 * cd into the cbrcli directory and run with `python cbrcli.py`
 
