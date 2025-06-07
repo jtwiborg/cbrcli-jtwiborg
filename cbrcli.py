@@ -369,6 +369,7 @@ commands = {
     'crossprocs-save': "crossprocs-save <number, *> <filename>\tSave cross processes to file",
     'children': "children [number]\tList child processes",
     'children-save': "children-save <filename>\tSave child processes to file",
+    'siblings': "siblings [number] [count] [asc|desc]\tList sibling processes",
     'parents': "parent [number]\tList parent processes",
     'parents-save': "parent-save <filename>\tSave parent processes to file",
     'exit': "exit\tTerminate cbcli",
@@ -794,6 +795,12 @@ def get_extra_data(records, data_type, formatter=no_format, do_color=False):
 def print_walking_results(proc, depth):
     print("[%d] %s%s" % (depth, "  "*depth, '\t'.join([str(getattr(proc, i, '')) for i in state['fieldsets'][state['selected_mode']['name']]['current']])))
 
+def print_sibling_results(proc, depth, highlight_id=None):
+    line = "[%d] %s%s" % (depth, "  "*depth, '\t'.join([str(getattr(proc, i, '')) for i in state['fieldsets'][state['selected_mode']['name']]['current']]))
+    if highlight_id and getattr(proc, 'unique_id', None) == highlight_id:
+        line = color(line, 'orange')
+    print(line)
+
 state['value_suggestions'] = deque(maxlen=state['options']['suggestion_size']['value'])
 
 class cbcli_cmd:
@@ -1118,6 +1125,44 @@ class cbcli_cmd:
             records = [state.get('records', [])[int(params[0]) - 1]] if params else state.get('records', [])
             for proc in records:
                  proc.walk_parents(print_walking_results)
+        except (ValueError, IndexError):
+            return "Invalid id"
+        except KeyboardInterrupt:
+            return "Caught ctrl+c. Use 'exit' or ctrl+d to quit"
+    @staticmethod
+    def _siblings(cmd, params, state):
+        record_idx = None
+        count = None
+        order = 'asc'
+        remaining = list(params)
+        if remaining:
+            try:
+                record_idx = int(remaining[0]) - 1
+                remaining = remaining[1:]
+            except ValueError:
+                record_idx = None
+        if remaining:
+            if remaining[0].isdigit():
+                count = int(remaining[0])
+                remaining = remaining[1:]
+        if remaining:
+            if remaining[0].lower() in ('asc', 'desc'):
+                order = remaining[0].lower()
+        try:
+            records = [state.get('records', [])[record_idx]] if record_idx is not None else state.get('records', [])
+            for proc in records:
+                parent = proc.parent
+                if not parent:
+                    print("No parent process")
+                    continue
+                siblings = [c.process for c in parent.children if not c.terminated]
+                siblings.sort(key=lambda p: getattr(p, 'start', 0))
+                if order == 'desc':
+                    siblings.reverse()
+                if count is not None:
+                    siblings = siblings[:count]
+                for sib in siblings:
+                    print_sibling_results(sib, 0, highlight_id=getattr(proc, 'unique_id', None))
         except (ValueError, IndexError):
             return "Invalid id"
         except KeyboardInterrupt:

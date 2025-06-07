@@ -7,7 +7,8 @@ cbrcli was developed by security analysts to streamline the process of querying 
 I found this tool to be very good, however a bit old and with old dependencies. This is an attempt to fix this. All creds to the original author ctxis.
 Things that have been updated:
 * python3 ready
-* New commands. 
+* New commands.
+  * `siblings` command for listing sibling processes
 
 ## Installing
 
