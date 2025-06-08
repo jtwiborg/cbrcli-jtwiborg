@@ -10,6 +10,7 @@ Things that have been updated:
 * New commands.
 * `siblings` command for listing sibling processes (results are numbered and can be inspected)
 * `alert` mode for querying watchlist and feed alerts
+* `process` command in alert mode to display process details for an alert
 
 ## Installing
 
