@@ -1285,7 +1285,7 @@ class cbcli_cmd:
         if not proc_guid:
             return "No process id available"
         try:
-            proc = cb.select(Process, proc_guid)
+            proc = cb.select(Process, proc_guid, force_init=True)
             print(proc)
         except Exception:
             return "Unable to retrieve process"
