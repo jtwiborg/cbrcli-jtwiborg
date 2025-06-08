@@ -375,19 +375,33 @@ if not os.path.exists(os.sep.join((config_dir, filter_file))):
     with open(os.sep.join((config_dir, filter_file)), 'w') as f:
         json.dump(filters, f)
 
-with open(os.sep.join((config_dir, fieldset_file))) as fieldsets, open(os.sep.join((config_dir, filter_file))) as filters:
+with open(os.sep.join((config_dir, fieldset_file))) as fieldsets, \
+        open(os.sep.join((config_dir, filter_file))) as filters:
     state['fieldsets'] = json.load(fieldsets)
     state['filters'] = json.load(filters)
 
-if not state['fieldsets']['process'].get('current'):
-    state['fieldsets']['process']['current'] = state['fieldsets']['process']['default']
-    state['fieldsets']['binary']['current'] = state['fieldsets']['binary']['default']
-    state['fieldsets']['sensor']['current'] = state['fieldsets']['sensor']['default']
-    state['fieldsets']['alert']['current'] = state['fieldsets']['alert']['default']
-
+# Make sure all modes exist in the loaded fieldsets/filters. This allows
+# older configuration files to work even when new modes are introduced
+updated = False
 for mode in modes:
-    if not state['filters'].get(mode):
+    if mode not in state['fieldsets']:
+        default_fieldset = modes[mode]['default_fieldset']
+        state['fieldsets'][mode] = {'current': default_fieldset,
+                                    'default': default_fieldset}
+        updated = True
+    elif not state['fieldsets'][mode].get('current'):
+        state['fieldsets'][mode]['current'] = state['fieldsets'][mode]['default']
+        updated = True
+    if mode not in state['filters']:
         state['filters'][mode] = {}
+        updated = True
+
+if updated:
+    # Persist any added defaults
+    with open(os.sep.join((config_dir, fieldset_file)), 'w') as f:
+        json.dump(state['fieldsets'], f)
+    with open(os.sep.join((config_dir, filter_file)), 'w') as f:
+        json.dump(state['filters'], f)
 
 color_schemes = {
     'default': {
