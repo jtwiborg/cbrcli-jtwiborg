@@ -9,6 +9,7 @@ Things that have been updated:
 * python3 ready
 * New commands.
 * `siblings` command for listing sibling processes (results are numbered and can be inspected)
+* `alert` mode for querying watchlist and feed alerts
 
 ## Installing
 
@@ -57,12 +58,14 @@ search parent_name:winword.exe AND process_name:powershell.exe
 filter netconn_count:[1 TO *]
 ```
 
-## Switching between Process and Binary Modes
+## Switching between Process, Binary, Sensor and Alert Modes
 
-cbrcli has two `modes` which determine whether to query for processes or binaries. The currently selected mode is displayed in the prompt and can be changed using the `mode` command followed by either `process` or `binary`. There is no difference to any of the commands you can perform between the two modes, however there will be different search terms available. The autocomplete functionality will only suggest valid fields for the current mode, for example `process_name` will only be available in `process` mode.
+cbrcli supports multiple `modes` which determine what type of objects are queried. The currently selected mode is displayed in the prompt and can be changed using the `mode` command followed by `process`, `binary`, `sensor` or `alert`. Each mode has a different set of search terms available. The autocomplete functionality will only suggest valid fields for the current mode, for example `process_name` will only be available in `process` mode.
 ```
 mode binary
 mode process
+mode sensor
+mode alert
 ```
 
 ## Displaying and Viewing Results

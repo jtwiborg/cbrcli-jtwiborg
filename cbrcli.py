@@ -16,7 +16,7 @@ import time
 import subprocess
 from hashlib import md5
 from datetime import datetime, timedelta
-from cbapi.response import CbResponseAPI, Process, Binary, Feed, Sensor
+from cbapi.response import CbResponseAPI, Process, Binary, Feed, Sensor, Alert
 from cbapi.live_response_api import LiveResponseError
 from cbapi.errors import ServerError, CredentialError, ApiError
 from threading import Thread
@@ -134,7 +134,88 @@ modes = {
             'ipaddr',
             'regmod',
             'filemod',
-            'webui_link',
+        'webui_link',
+        ]
+    },
+    'alert': {
+        'object': Alert,
+        'name': 'alert',
+        'sort_field': 'created_time desc',
+        'sortable_fields': ['created_time', 'alert_severity', 'report_score'],
+        'default_fieldset': ['hostname', 'process_name', 'alert_type', 'status'],
+        'search_fields': [
+            'alert_severity',
+            'alert_type',
+            'assigned_to',
+            'create_time',
+            'created_time',
+            'description',
+            'domain',
+            'feed_category',
+            'feed_id',
+            'feed_name',
+            'group',
+            'hostname',
+            'ioc_value',
+            'ipaddr',
+            'ipv6addr',
+            'is_ignored',
+            'md5',
+            'observed_filename',
+            'process_name',
+            'process_path',
+            'report_id',
+            'report_score',
+            'resolved_time',
+            'sha256',
+            'status',
+            'tags',
+            'title',
+            'update_time',
+            'username',
+            'watchlist_id',
+            'watchlist_name',
+        ],
+        'fields': [
+            'username',
+            'alert_type',
+            'sensor_criticality',
+            'modload_count',
+            'report_score',
+            'watchlist_id',
+            'sensor_id',
+            'feed_name',
+            'created_time',
+            'report_ignored',
+            'ioc_type',
+            'watchlist_name',
+            'ioc_confidence',
+            'alert_severity',
+            'crossproc_count',
+            'group',
+            'hostname',
+            'filemod_count',
+            'comms_ip',
+            'netconn_count',
+            'interface_ip',
+            'status',
+            'process_path',
+            'description',
+            'process_name',
+            'process_unique_id',
+            'process_id',
+            'link',
+            '_version_',
+            'regmod_count',
+            'md5',
+            'segment_id',
+            'total_hosts',
+            'feed_id',
+            'ioc_value',
+            'os_type',
+            'childproc_count',
+            'unique_id',
+            'feed_rating',
         ]
     },
     'sensor': {
@@ -301,6 +382,8 @@ with open(os.sep.join((config_dir, fieldset_file))) as fieldsets, open(os.sep.jo
 if not state['fieldsets']['process'].get('current'):
     state['fieldsets']['process']['current'] = state['fieldsets']['process']['default']
     state['fieldsets']['binary']['current'] = state['fieldsets']['binary']['default']
+    state['fieldsets']['sensor']['current'] = state['fieldsets']['sensor']['default']
+    state['fieldsets']['alert']['current'] = state['fieldsets']['alert']['default']
 
 for mode in modes:
     if not state['filters'].get(mode):
@@ -330,7 +413,7 @@ def color(s, c):
 
 commands = {
     'version': "version\tPrint cbcli version",
-    'mode': "mode <mode>\tSwitch to different search mode (most be one of: process, binary, sensor)",
+    'mode': "mode <mode>\tSwitch to different search mode (most be one of: process, binary, sensor, alert)",
     'search': "search <CB query string>\tSearch carbon black server",
     'filter': "filter <CB query string>\tFurther filter search query",
     'bfilter': "bfilter <CB query string>\tReplace previous filter with this one",
