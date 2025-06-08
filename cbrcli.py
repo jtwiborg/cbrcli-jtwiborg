@@ -468,6 +468,7 @@ commands = {
     'children': "children [number]\tList child processes",
     'children-save': "children-save <filename>\tSave child processes to file",
     'siblings': "siblings [number] [count] [asc|desc]\tList sibling processes (numbered)",
+    'process': "process <alert number>\tShow related process information for an alert",
     'parents': "parent [number]\tList parent processes",
     'parents-save': "parent-save <filename>\tSave parent processes to file",
     'exit': "exit\tTerminate cbcli",
@@ -1270,6 +1271,24 @@ class cbcli_cmd:
             return "Invalid id"
         except KeyboardInterrupt:
             return "Caught ctrl+c. Use 'exit' or ctrl+d to quit"
+    @staticmethod
+    def _process(cmd, params, state):
+        if state['selected_mode']['name'] != 'alert':
+            return "This command is only available in alert mode"
+        if not params:
+            return "Please specify an alert id"
+        try:
+            alert = state.get('records', [])[int(params[0]) - 1]
+        except (ValueError, IndexError):
+            return "Invalid id"
+        proc_guid = getattr(alert, 'process_unique_id', None) or getattr(alert, 'process_id', None)
+        if not proc_guid:
+            return "No process id available"
+        try:
+            proc = cb.select(Process, proc_guid)
+            print(proc)
+        except Exception:
+            return "Unable to retrieve process"
     @staticmethod
     def _children_save(cmd, params, state):
         if not params:
