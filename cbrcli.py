@@ -663,18 +663,20 @@ def get_fields(result, state, expand_tabs=False):
             show = True
             neg_matches = ((df[0], df[1]) for df in state['display_filters'] if not df[2])
             for nm in neg_matches:
-                if nm[0].search(str(getattr(r, nm[1]))):
+                attr = r._info.get(nm[1]) if hasattr(r, '_info') and nm[1] in r._info else getattr(r, nm[1], '')
+                if nm[0].search(str(attr)):
                     show = False
             matches = ((df[0], df[1]) for df in state['display_filters'] if df[2])
             for m in matches:
-                if not m[0].search(str(getattr(r, m[1]))):
+                attr = r._info.get(m[1]) if hasattr(r, '_info') and m[1] in r._info else getattr(r, m[1], '')
+                if not m[0].search(str(attr)):
                     show = False
             if not show:
                 continue
             fieldlist = []
             for field, regex in regex_fields:
                 try:
-                    attr = getattr(r, field)
+                    attr = r._info.get(field) if hasattr(r, '_info') and field in r._info else getattr(r, field)
                     if regex:
                         attr_matches = []
                         if not type(attr) == list:
