@@ -1334,7 +1334,7 @@ class cbcli_cmd:
         except Exception:
             return "Unable to retrieve process"
     @staticmethod
-    def _sensor_info(cmd, params, state):
+    def _sensor(cmd, params, state):
         if state['selected_mode']['name'] not in ('alert', 'process'):
             return "This command is only available in alert or process mode"
         if not params or not params[0].isdigit():
