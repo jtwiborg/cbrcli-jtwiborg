@@ -492,6 +492,7 @@ commands = {
     'children-save': "children-save <filename>\tSave child processes to file",
     'siblings': "siblings [number] [count] [asc|desc]\tList sibling processes (numbered)",
     'process': "process <alert number>\tShow related process information for an alert",
+    'sensor': "sensor <id>\tShow sensor information for the alert/process",
     'parents': "parent [number]\tList parent processes",
     'parents-save': "parent-save <filename>\tSave parent processes to file",
     'exit': "exit\tTerminate cbcli",
@@ -661,7 +662,8 @@ def do_search(qry):
             qry_result = qry_result.group_by(state['selected_mode'].get('group_field', 'id'))
         except AttributeError:
             print("Warning: Unable to group by field %s" % state['selected_mode'].get('group_field'))
-    qry_result = qry_result.sort(state['selected_mode']['sort_field'])
+    if state['selected_mode']['sort_field']:
+        qry_result = qry_result.sort(state['selected_mode']['sort_field'])
     return qry, qry_result
 
 def get_fields(result, state, expand_tabs=False):
@@ -1331,6 +1333,48 @@ class cbcli_cmd:
             print(proc)
         except Exception:
             return "Unable to retrieve process"
+    @staticmethod
+    def _sensor_info(cmd, params, state):
+        if state['selected_mode']['name'] not in ('alert', 'process'):
+            return "This command is only available in alert or process mode"
+        if not params or not params[0].isdigit():
+            return "Usage: sensor <id>"
+
+        try:
+            record_idx = int(params[0]) - 1
+            if record_idx < 0: # Ensure index is not negative
+                raise IndexError
+            record = state.get('records', [])[record_idx]
+        except (ValueError, IndexError):
+            return "Invalid id"
+
+        sensor_id = safe_get_field(record, 'sensor_id', None)
+
+        if not sensor_id:
+            return f"No sensor_id found for {state['selected_mode']['name']} record {params[0]}"
+
+        try:
+            sensor_details = cb.select(Sensor, sensor_id, force_init=True)
+            if hasattr(sensor_details, '_info'):
+                data = dict(sensor_details._info)
+                for f in ('interface_ip', 'comms_ip', 'ip', 'network_adapters'): # network_adapters can be complex
+                    if f in data:
+                        if isinstance(data.get(f), int): # IP addresses
+                            data[f] = int_to_ip(data[f])
+                        elif isinstance(data.get(f), list) and f == 'network_adapters': # Handle network_adapters list
+                            # Attempt to pretty print network adapter info if it's a list of dicts
+                            try:
+                                data[f] = json.dumps([{'ip': int_to_ip(na.get('ip_address')), 'mac': na.get('mac_address'), 'interface': na.get('adapter_description')} for na in data[f] if isinstance(na, dict)], indent=2)
+                            except: # Fallback if structure is not as expected
+                                data[f] = json.dumps(data[f], indent=2)
+                print(json.dumps(data, indent=2))
+            else:
+                print(sensor_details)
+        except ApiError as e:
+            return f"Error retrieving sensor details for sensor_id {sensor_id}: {e}"
+        except Exception as e:
+            return f"An unexpected error occurred while retrieving sensor details: {e}"
+
     @staticmethod
     def _children_save(cmd, params, state):
         if not params:
