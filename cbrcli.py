@@ -1364,8 +1364,15 @@ class cbcli_cmd:
         if not md5:
             return "No binary md5 available"
         try:
-            binary = cb.select(Binary, md5, force_init=True)
-            print(binary)
+            binary = cb.select(Binary, md5)
+            if hasattr(binary, "_info"):
+                data = dict(binary._info)
+                for f in ("interface_ip", "comms_ip", "ip"):
+                    if isinstance(data.get(f), int):
+                        data[f] = int_to_ip(data[f])
+                print(json.dumps(data, indent=2))
+            else:
+                print(binary)
         except Exception:
             return "Unable to retrieve binary"
 
