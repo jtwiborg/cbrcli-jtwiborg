@@ -98,6 +98,7 @@ modes = {
             'sensor_id',
             'filtering_known_dlls',
             'modload_count',
+            'process_id',
             'parent_unique_id',
             'emet_count',
             'cmdline',
