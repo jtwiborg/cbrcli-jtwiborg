@@ -10,6 +10,7 @@ import json
 import re
 import webbrowser
 import struct
+import socket
 import sre_constants
 import shutil
 import time
@@ -319,6 +320,13 @@ def encode(s, encoding='utf8', errors='ignore'):
 def decode(s, encoding='utf8', errors='ignore'):
     """Return *s* unchanged for Python 3 compatibility."""
     return s
+
+def int_to_ip(value):
+    """Convert signed/unsigned integer IPv4 to dotted quad string."""
+    try:
+        return socket.inet_ntoa(struct.pack('!I', value & 0xffffffff))
+    except Exception:
+        return str(value)
 
 # Safely fetch an attribute from a Carbon Black object. Some alert fields may
 # trigger additional API calls which can raise ApiError or ServerError if the
@@ -707,7 +715,10 @@ def get_fields(result, state, expand_tabs=False):
                 elif type(attr) == datetime:
                     fieldlist.append(u(attr.strftime(state['options']['timestamp_format']['value'])))
                 elif type(attr) == int:
-                    fieldlist.append(str(attr))
+                    if field.endswith('_ip') or field == 'ip':
+                        fieldlist.append(int_to_ip(attr))
+                    else:
+                        fieldlist.append(str(attr))
                 else:
                     fieldlist.append(u(attr).replace('\n', ' '))
             if ignore_duplicates:
@@ -1090,7 +1101,11 @@ class cbcli_cmd:
                     print("Record has expired")
                 else:
                     if hasattr(rec, '_info'):
-                        print(json.dumps(rec._info, indent=2))
+                        data = dict(rec._info)
+                        for f in ('interface_ip', 'comms_ip', 'ip'):
+                            if isinstance(data.get(f), int):
+                                data[f] = int_to_ip(data[f])
+                        print(json.dumps(data, indent=2))
                     else:
                         print(rec)
             except ValueError:
@@ -1105,6 +1120,8 @@ class cbcli_cmd:
                 try:
                     rec = state.get('records', [])[index - 1]
                     val = getattr(rec, field)
+                    if isinstance(val, int) and (field.endswith('_ip') or field == 'ip'):
+                        val = int_to_ip(val)
                     if isinstance(val, (dict, list)):
                         val = json.dumps(val, indent=2)
                     print("%*s: %s" % (padding, field, u(val)))
