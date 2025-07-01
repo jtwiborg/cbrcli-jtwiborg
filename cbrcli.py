@@ -1487,12 +1487,7 @@ class cbcli_cmd:
             binary_object = cb.select(Binary).where(f'md5:{md5_hash}').first()
 
             if binary_object:
-                if hasattr(binary_object, '_info'):
-                    # Pretty print the binary information
-                    print(json.dumps(binary_object._info, indent=2, sort_keys=True))
-                else:
-                    # Fallback if _info is not available (should not happen for Binary objects)
-                    print(binary_object)
+                print(binary_object)
             else:
                 return f"No binary found with MD5 hash: {md5_hash}"
         except (ApiError, ServerError) as e:
