@@ -49,7 +49,59 @@ Installation on Linux should be much simpler than Windows.
 
 ## In-program Help
 
+
 The built-in `help` command can be used as a quick reference for commands in cbrcli, providing a full list of all available commands, along with a short discription and usage syntax.
+
+## Available Commands
+
+Below is a brief summary of the commands provided by `cbrcli.py`:
+
+* `version` - Print cbcli version
+* `mode <mode>` - Switch to different search mode (most be one of: process, binary, sensor, alert)
+* `search <CB query string>` - Search carbon black server
+* `filter <CB query string>` - Further filter search query
+* `bfilter <CB query string>` - Replace previous filter with this one
+* `fieldset <field1>[:regex] [field2][:regex], ...` - Define which fields to show in output. Applies to show and save
+* `show` - Display paged results in terminal (press <enter> to show more)
+* `save <filename>` - Save results to <filename>
+* `fieldset-save <name>` - Save fieldset as <name>
+* `fieldset-load <name>` - Load fieldset with <name>
+* `fieldset-remove <name>` - Remove fieldset with <name>
+* `query-save <name>` - Save current query as <name>
+* `query-remove <name>` - Remove query with <name>
+* `dfilter <field>:<filter>` - Apply a regex display filter to query, applies to show and save commands
+* `dfilter-clear` - Clear all display filters
+* `dfilter-remove` - Remove last display filter
+* `info <number> [field1] [field2] ...` - Display all information on record, or specific fields if specified
+* `help` - Show this help
+* `n, next` - After using 'show', display next page of results
+* `summarise <field>` - print summary histogram of speficied field
+* `feed <feedname>` - Perform a search for specified feed hits
+* `feeds` - List all feeds with hit counts
+* `back` - Remove the most recent query from filter
+* `set [<option> <value>]` - Set an option (or display settings if no option specified)
+* `group <field>` - Group results by <field>
+* `ungroup` - Disable grouping
+* `sort <field> [asc|desc]` - Sort results by <field>
+* `open <number>` - Open event <number> in browser
+* `connect <number>` - Go live on host relating to record
+* `netconns <number, *> [filter]` - Show network connections for displayed records, or specific record id if specified
+* `netconns-save <number, *> <filename>` - Save netconns to file
+* `regmods <number, *> [filter]` - Show registry modifications for displayed records, or specific record id if specified
+* `regmods-save <number, *> <filename>` - Save regmods to file
+* `filemods <number, *> [filter]` - Show file modifications for displayed records, or specific record id if specified
+* `filemods-save <number, *> <filename>` - Save filemods to file
+* `modloads <number, *> [filter]` - Show modloads for displayed records, or specific record id if specified
+* `modloads-save <number, *> <filename>` - Save modloads to file
+* `crossprocs <number, *> [filter]` - Show cross processes for displayed records, or specific record id if specified
+* `crossprocs-save <number, *> <filename>` - Save cross processes to file
+* `children [number]` - List child processes
+* `children-save <filename>` - Save child processes to file
+* `siblings [number] [count] [asc|desc]` - List sibling processes (numbered)
+* `process <alert number>` - Show related process information for an alert
+* `parent [number]` - List parent processes
+* `parent-save <filename>` - Save parent processes to file
+* `exit` - Terminate cbcli
 
 ## Searching
 
