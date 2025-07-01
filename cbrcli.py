@@ -1346,17 +1346,21 @@ class cbcli_cmd:
         except (ValueError, IndexError):
             return "Invalid id"
         proc = None
+        md5 = None
         if state['selected_mode']['name'] == 'alert':
             proc_guid = getattr(rec, 'process_unique_id', None) or getattr(rec, 'process_id', None)
-            if not proc_guid:
-                return "No process id available"
-            try:
-                proc = cb.select(Process, proc_guid, force_init=True)
-            except Exception:
-                return "Unable to retrieve process"
+            if proc_guid:
+                try:
+                    proc = cb.select(Process, proc_guid, force_init=True)
+                except Exception:
+                    proc = None
+            if proc:
+                md5 = getattr(proc, 'process_md5', None)
+            if not md5:
+                md5 = getattr(rec, 'md5', None)
         else:
             proc = rec
-        md5 = getattr(proc, 'process_md5', None)
+            md5 = getattr(proc, 'process_md5', None)
         if not md5:
             return "No binary md5 available"
         try:
