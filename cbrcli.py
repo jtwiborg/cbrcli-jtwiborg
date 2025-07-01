@@ -1085,7 +1085,14 @@ class cbcli_cmd:
         if len(params) == 1:
             try:
                 index = int(params[0])
-                print(state.get('records', [])[index - 1] or "Record has expired")
+                rec = state.get('records', [])[index - 1]
+                if not rec:
+                    print("Record has expired")
+                else:
+                    if hasattr(rec, '_info'):
+                        print(json.dumps(rec._info, indent=2))
+                    else:
+                        print(rec)
             except ValueError:
                 return "Invalid id"
             except IndexError:
@@ -1096,7 +1103,11 @@ class cbcli_cmd:
             padding = max(map(len, fields))
             for field in fields:
                 try:
-                    print("%*s: %s" % (padding, field, u(getattr(state.get('records', [])[index - 1], field))))
+                    rec = state.get('records', [])[index - 1]
+                    val = getattr(rec, field)
+                    if isinstance(val, (dict, list)):
+                        val = json.dumps(val, indent=2)
+                    print("%*s: %s" % (padding, field, u(val)))
                 except ValueError:
                     return "Invalid id"
                 except IndexError:
