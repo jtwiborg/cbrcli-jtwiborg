@@ -95,6 +95,7 @@ modes = {
         'sortable_fields': ['last_update', 'start', 'process_name', 'netconn_count', 'regmod_count', 'filemod_count', 'modload_count'],
         'default_fieldset': ['hostname', 'username', 'parent_name', 'process_name'],
         'fields': [
+            'process_name',
             'process_md5',
             'sensor_id',
             'filtering_known_dlls',
@@ -119,7 +120,6 @@ modes = {
             'process_pid',
             'username',
             'terminated',
-            'process_name',
             'comms_ip',
             'last_server_update',
             'path',
