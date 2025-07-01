@@ -496,6 +496,7 @@ commands = {
     'parents': "parent [number]\tList parent processes",
     'parents-save': "parent-save <filename>\tSave parent processes to file",
     'exit': "exit\tTerminate cbcli",
+    'binary': "binary <alert/process number>\tShow binary information for the md5sum of the chosen alert or process",
 }
 
 def _get_terminal_size_windows():
@@ -1453,6 +1454,52 @@ class cbcli_cmd:
     @staticmethod
     def _debug(cmd, params, state):
         print(dir(state.get('records', [])[int(params[0]) - 1]))
+
+    @staticmethod
+    def _binary(cmd, params, state):
+        if state['selected_mode']['name'] not in ('alert', 'process'):
+            return "This command is only available in alert or process mode."
+
+        if not params or len(params) != 1:
+            return "Usage: binary <alert/process number>"
+
+        try:
+            record_idx = int(params[0]) - 1
+            if record_idx < 0: # Ensure index is not negative
+                raise IndexError
+            record = state.get('records', [])[record_idx]
+        except ValueError:
+            return "Invalid number: Please provide a valid alert/process number."
+        except IndexError:
+            return f"Invalid number: No {state['selected_mode']['name']} found with that number."
+
+        md5_hash = None
+        if state['selected_mode']['name'] == 'alert':
+            md5_hash = safe_get_field(record, 'md5', None)
+        elif state['selected_mode']['name'] == 'process':
+            md5_hash = safe_get_field(record, 'process_md5', None)
+
+        if not md5_hash or md5_hash == 'NaN':
+            return f"No MD5 hash found for the selected {state['selected_mode']['name']}."
+
+        try:
+            # Use the recommended way to select the binary
+            binary_object = cb.select(Binary).where(f'md5:{md5_hash}').first()
+
+            if binary_object:
+                if hasattr(binary_object, '_info'):
+                    # Pretty print the binary information
+                    print(json.dumps(binary_object._info, indent=2, sort_keys=True))
+                else:
+                    # Fallback if _info is not available (should not happen for Binary objects)
+                    print(binary_object)
+            else:
+                return f"No binary found with MD5 hash: {md5_hash}"
+        except (ApiError, ServerError) as e:
+            return f"Error retrieving binary information: {e}"
+        except Exception as e: # Catch any other unexpected errors
+            return f"An unexpected error occurred: {e}"
+        return None # Indicate success if we printed output
 
 class live_shell:
     def __init__(self, hostname):
