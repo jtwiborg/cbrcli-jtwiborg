@@ -319,6 +319,20 @@ def decode(s, encoding='utf8', errors='ignore'):
     """Return *s* unchanged for Python 3 compatibility."""
     return s
 
+# Safely fetch an attribute from a Carbon Black object. Some alert fields may
+# trigger additional API calls which can raise ApiError or ServerError if the
+# backing data is missing.  In those cases return a default value rather than
+# bubbling the exception up to the main command loop.
+def safe_get_field(obj, field, default='NaN'):
+    try:
+        if hasattr(obj, '_info') and field in obj._info:
+            return obj._info.get(field, default)
+        return getattr(obj, field)
+    except (AttributeError, KeyError, ServerError, ApiError):
+        return default
+    except Exception:
+        return default
+
 try:
     with open(os.sep.join((config_dir, opt_file)), 'r') as f:
         state['options'] = json.load(f)
@@ -663,33 +677,30 @@ def get_fields(result, state, expand_tabs=False):
             show = True
             neg_matches = ((df[0], df[1]) for df in state['display_filters'] if not df[2])
             for nm in neg_matches:
-                attr = r._info.get(nm[1]) if hasattr(r, '_info') and nm[1] in r._info else getattr(r, nm[1], '')
+                attr = safe_get_field(r, nm[1])
                 if nm[0].search(str(attr)):
                     show = False
             matches = ((df[0], df[1]) for df in state['display_filters'] if df[2])
             for m in matches:
-                attr = r._info.get(m[1]) if hasattr(r, '_info') and m[1] in r._info else getattr(r, m[1], '')
+                attr = safe_get_field(r, m[1])
                 if not m[0].search(str(attr)):
                     show = False
             if not show:
                 continue
             fieldlist = []
             for field, regex in regex_fields:
-                try:
-                    attr = r._info.get(field) if hasattr(r, '_info') and field in r._info else getattr(r, field)
-                    if regex:
-                        attr_matches = []
-                        if not type(attr) == list:
-                            attr = [attr]
-                        for attr_field in attr:
-                            result = regex.search(encode(attr_field))
-                            if result:
-                                attr_matches.append(result.group(0) if not result.groups() else result.groups()[0])
-                        attr = attr_matches
-                except AttributeError:
-                    attr = ''
-                if not attr:
-                    attr = ''
+                attr = safe_get_field(r, field)
+                if regex and attr != 'NaN':
+                    attr_matches = []
+                    if not isinstance(attr, list):
+                        attr = [attr]
+                    for attr_field in attr:
+                        result = regex.search(encode(attr_field))
+                        if result:
+                            attr_matches.append(result.group(0) if not result.groups() else result.groups()[0])
+                    attr = attr_matches if attr_matches else 'NaN'
+                if attr is None or attr == '' or (isinstance(attr, list) and not attr):
+                    attr = 'NaN'
                 if type(attr) == list:
                     fieldlist.append(u(', '.join((ai for ai in attr if ai))))
                 elif type(attr) == datetime:
