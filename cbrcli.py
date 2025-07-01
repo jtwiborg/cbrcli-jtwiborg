@@ -492,6 +492,8 @@ commands = {
     'children-save': "children-save <filename>\tSave child processes to file",
     'siblings': "siblings [number] [count] [asc|desc]\tList sibling processes (numbered)",
     'process': "process <alert number>\tShow related process information for an alert",
+    'binary': "binary <process or alert number>\tShow related binary information",
+    'sensor': "sensor <process or alert number>\tShow related sensor information",
     'parents': "parent [number]\tList parent processes",
     'parents-save': "parent-save <filename>\tSave parent processes to file",
     'exit': "exit\tTerminate cbcli",
@@ -661,7 +663,8 @@ def do_search(qry):
             qry_result = qry_result.group_by(state['selected_mode'].get('group_field', 'id'))
         except AttributeError:
             print("Warning: Unable to group by field %s" % state['selected_mode'].get('group_field'))
-    qry_result = qry_result.sort(state['selected_mode']['sort_field'])
+    if state['selected_mode'].get('sort_field') and hasattr(qry_result, 'sort') and state['selected_mode']['sort_field']:
+        qry_result = qry_result.sort(state['selected_mode']['sort_field'])
     return qry, qry_result
 
 def get_fields(result, state, expand_tabs=False):
@@ -1331,6 +1334,67 @@ class cbcli_cmd:
             print(proc)
         except Exception:
             return "Unable to retrieve process"
+
+    @staticmethod
+    def _binary(cmd, params, state):
+        if state['selected_mode']['name'] not in ('alert', 'process'):
+            return "This command is only available in alert or process mode"
+        if not params:
+            return "Please specify a record id"
+        try:
+            rec = state.get('records', [])[int(params[0]) - 1]
+        except (ValueError, IndexError):
+            return "Invalid id"
+        proc = None
+        if state['selected_mode']['name'] == 'alert':
+            proc_guid = getattr(rec, 'process_unique_id', None) or getattr(rec, 'process_id', None)
+            if not proc_guid:
+                return "No process id available"
+            try:
+                proc = cb.select(Process, proc_guid, force_init=True)
+            except Exception:
+                return "Unable to retrieve process"
+        else:
+            proc = rec
+        md5 = getattr(proc, 'process_md5', None)
+        if not md5:
+            return "No binary md5 available"
+        try:
+            binary = cb.select(Binary, md5, force_init=True)
+            print(binary)
+        except Exception:
+            return "Unable to retrieve binary"
+
+    @staticmethod
+    def _sensor(cmd, params, state):
+        if state['selected_mode']['name'] not in ('alert', 'process'):
+            return "This command is only available in alert or process mode"
+        if not params:
+            return "Please specify a record id"
+        try:
+            rec = state.get('records', [])[int(params[0]) - 1]
+        except (ValueError, IndexError):
+            return "Invalid id"
+        sensor_id = None
+        if state['selected_mode']['name'] == 'alert':
+            sensor_id = getattr(rec, 'sensor_id', None)
+            if not sensor_id:
+                proc_guid = getattr(rec, 'process_unique_id', None) or getattr(rec, 'process_id', None)
+                if proc_guid:
+                    try:
+                        proc = cb.select(Process, proc_guid, force_init=True)
+                        sensor_id = getattr(proc, 'sensor_id', None)
+                    except Exception:
+                        return "Unable to retrieve process"
+        else:
+            sensor_id = getattr(rec, 'sensor_id', None)
+        if not sensor_id:
+            return "No sensor id available"
+        try:
+            sensor = cb.select(Sensor, sensor_id, force_init=True)
+            print(sensor)
+        except Exception:
+            return "Unable to retrieve sensor"
     @staticmethod
     def _children_save(cmd, params, state):
         if not params:
