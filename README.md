@@ -4,7 +4,8 @@
 
 cbrcli was developed by security analysts to streamline the process of querying Carbon Black data, providing just the information you want in an easily readable format. It is not intended to completely replace the standard web interface, but to work alongside it providing a more customisable view of the data.
 
-I found this tool to be very good, however a bit old and with old dependencies. This is an attempt to fix this. All creds to the original author ctxis.
+I found this tool to be very good, however a bit old and with old dependencies. `cbrcli-jtwiborg` originally started as a fork of `ctxis/cbrcli` and is now maintained independently. All credit to the original author ctxis for the original foundation.
+
 Things that have been updated:
 * python3 ready
 * New commands.
